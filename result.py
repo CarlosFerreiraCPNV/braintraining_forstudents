@@ -14,8 +14,6 @@ import info05
 # TABLEAU DES VALEURS DU JEU
 top_label_list = [("Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
 
-for x in range(len(data_list)):
-    print()
 
 # call other windows (exercices)
 def results():
@@ -115,7 +113,7 @@ def results():
 
     button_results = tk.Button(results_button_frame, text="Voir résultats")
     button_results.pack()
-    button_results.bind("<Button-1>", lambda e: display_tuple_in_table((top_label_list + data_list)))
+    button_results.bind("<Button-1>", lambda e: display_tuple_in_table((top_label_list + get_data_for_result_list())))
 
     #display()
 
