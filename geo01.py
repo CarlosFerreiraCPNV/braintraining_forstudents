@@ -6,7 +6,7 @@ import tkinter as tk
 import random
 from math import sqrt
 import time
-import database
+from database import *
 import datetime
 
 
@@ -87,11 +87,6 @@ def next_point(event):
     lbl_target.configure(text=f"Cliquez sur le point ({round(target_x, 1)}, {round(target_y, 1)}). Echelle x -10 à +10, y-5 à +5")
 
 
-def save_game(event):
-    # TODO
-    print("dans save")
-
-
 def display_timer():
     duration=datetime.datetime.now()-start_date #elapsed time since beginning, in time with decimals
     duration_s=int(duration.total_seconds()) #idem but in seconds (integer)
@@ -99,10 +94,16 @@ def display_timer():
     lbl_duration.configure(text="{:02d}".format(int(duration_s /60)) + ":" + "{:02d}".format(duration_s %60))
     window_geo01.after(1000, display_timer) #recommencer après 15 ms
 
+def save_game(event):
+    global entry_pseudo
+    pseudo = entry_pseudo.get()
+    date_hour = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_by_nickname(pseudo, exercise, start_date, (datetime.datetime.now() - start_date), nbsuccess, nbtrials)
+    print("dans save")
 
 def open_window_geo_01(window):
     # window = tk.Tk()
-    global window_geo01, hex_color, lbl_title, lbl_duration, lbl_result, lbl_target, canvas, start_date
+    global window_geo01, hex_color, lbl_title, lbl_duration, lbl_result, lbl_target, canvas, start_date, entry_pseudo
     window_geo01 = tk.Toplevel(window)
 
     window_geo01.title("Exercice de géométrie")
