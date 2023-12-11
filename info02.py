@@ -46,11 +46,6 @@ def next(event):
     entry_n2.delete(0, 'end')
 
 
-def save_game(event):
-    print("dans save")
-    # TODO
-
-
 def test(event):
     global n2, nbsuccess, nbtrials
     # Fonction pour tester si la valeur est juste
@@ -75,6 +70,12 @@ def display_timer():
     lbl_duration.configure(text="{:02d}".format(int(duration_s / 60)) + ":" + "{:02d}".format(duration_s % 60))
     window_info02.after(1000, display_timer)  # recommencer après 15 ms
 
+def save_game(event):
+    global entry_pseudo
+    pseudo = entry_pseudo.get()
+    percentage = (nbsuccess * 100) / nbtrials
+    save_game_info(pseudo, exercise, start_date, (datetime.datetime.now() - start_date), nbsuccess, nbtrials, percentage)
+    print("dans save")
 
 def open_window_info_02(window):
     global window_info02, lbl_duration, lbl_result, entry_n2, label_u2, label_n1, hex_color, start_date

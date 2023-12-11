@@ -1,8 +1,8 @@
-#############################
-# Training (Menu)
-# JCY oct 23
-# PRO DB PY
-#############################
+"""
+Auteur : Carlos Ferreira
+Date : 27.11.2023
+Projet : Brain training for students
+"""
 
 import tkinter as tk
 import geo01

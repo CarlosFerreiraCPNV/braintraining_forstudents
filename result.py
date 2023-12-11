@@ -1,31 +1,360 @@
-#############################
-# Training (Menu)
-# JCY oct 23
-# PRO DB PY
-#############################
+"""
+Auteur : Carlos Ferreira
+Date : 27.11.2023
+Projet : Brain training for students
+"""
 
 import tkinter as tk
 from tkinter import *
+from tkinter import ttk
 from database import *
-import geo01
-import info02
-import info05
 
 # TABLEAU DES VALEURS DU JEU
-top_label_list = [("Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
+top_label_list = [("ID","Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
+filters = 0
+filter_variable = [()]
 
 
 # call other windows (exercices)
 def results():
-
+    global filters, exercice, pseudo, filter_variable
     def display_tuple_in_table(mytuple):
+        global filters, exercice, pseudo, filter_variable, info_label
         for line in range(0, len(mytuple)):
             for col in range(0, len(mytuple[line])):
-                (tk.Label(list_of_results_frame, text=mytuple[line][col], width=14, font=("Arial", 10)).grid(row=line,column=col,padx=2,pady=2))
+                info_label = tk.Label(list_of_results_frame, text=mytuple[line][col], width=14, font=("Arial", 10))
+                info_label.grid(row=line,column=col,padx=2,pady=2)
 
-    def clear(event):
-        for widget in frame_results.winfo_children():
+            if line > 0:
+                info_label.config(text="")
+                if mytuple[line][7] <= 25:
+                    info_label.config(bg="red")
+                if mytuple[line][7] > 25 and mytuple[line][6] < 75:
+                    info_label.config(bg="orange")
+                if mytuple[line][7] >= 75:
+                    info_label.config(bg="green")
+
+    # prend les 4 paramètres et génère une requête spéciale
+    def sql_generate():
+        sql_base = "SELECT * from results"
+        pseudo = pseudo_entry.get()
+        exercise = exercice_entry.get()
+        date_start = start_date_entry.get()
+        date_end = ends_date_entry.get()
+        sql_base = sql_base + sql_dynamic(pseudo, exercise, date_start, date_end)
+        print(sql_base)
+        return sql_base
+
+    # génère la fin de la requête dynamiquement
+    def sql_dynamic(p, e, ds, de):
+        sql_add = "\n where 1=1 "
+        if (p != ""):
+            sql_add += "\n and results.nickname ='" + str(p) + "'"
+        if (e != ""):
+            sql_add += "\n and results.exercises ='" + str(e) + "'"
+        if (ds != ""):
+            sql_add += "\n and results.dates >='" + str(ds) + "'"
+        if (de != ""):
+            sql_add += "\n and results.dates <='" + str(de) + "'"
+        return sql_add
+
+
+    def clear():
+        for widget in list_of_results_frame.winfo_children():
             widget.grid_forget()
+
+    def apply_filters():
+        global filters, exercice, pseudo, filter_variable
+        clear()
+        filter_variable = [()]
+        filter_variable = sql_generate()
+        list_of_results = get_data_for_result_list(filter_variable)
+        return list_of_results
+
+
+    def button_delete_action():
+        delete_id = delete_entry.get()
+        delete_element_on_result_list_by_id(delete_id)
+        display_tuple_in_table((top_label_list + apply_filters()))
+
+
+    #________________INSERT TO DB________________#
+    def create_window():
+        # Création de la fênetre
+        window = tk.Tk()
+        window.title("Affichage braintraining")
+        window.geometry("600x600")
+
+        # color définition
+        rgb_color = (139, 201, 194)
+        hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+        window.configure(bg=hex_color)
+
+        # insert informations on DB
+        def button_event():
+            pseudo = pseudo_entry.get()
+            exercise = exercise_entry.get()
+            date = date_entry.get()
+            time = time_entry.get()
+            nbsuccess = NbOk_entry.get()
+            nbtrials = NbTotal_entry.get()
+            percentage = (int(nbsuccess) * 100) / int(nbtrials)
+            insert_into_db_from_list_of_data(pseudo, exercise, date, time, nbsuccess, nbtrials, percentage)
+            display_tuple_in_table((top_label_list + apply_filters()))
+            window.destroy()
+
+        space_frame = tk.Frame(window)
+        space_frame.pack(pady=70)
+
+        # Mise en page
+        center_frame = tk.Frame(window)
+        center_frame.pack()
+
+        title_frame = tk.Frame(center_frame)
+        title_frame.pack()
+
+        title_label = tk.Label(title_frame, text="Informations à insérer :")
+        title_label.pack()
+
+        """
+        [------------Pseudo------------]
+        """
+
+        pseudo_frame = tk.Frame(center_frame)
+        pseudo_frame.pack(pady=10)
+
+        pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
+        pseudo_label.pack(side=LEFT)
+
+        pseudo_entry = tk.Entry(pseudo_frame)
+        pseudo_entry.pack(side=LEFT)
+
+        """
+        [------------Exercice------------]
+        """
+
+        exercice_frame = tk.Frame(center_frame)
+        exercice_frame.pack(pady=10)
+
+        exercise_label = tk.Label(exercice_frame, text="Exercice :")
+        exercise_label.pack(side=LEFT)
+
+        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15)
+        exercise_entry.pack(side=LEFT)
+
+        """
+        [------------Date------------]
+        """
+
+        date_frame = tk.Frame(center_frame)
+        date_frame.pack(pady=10)
+
+        date_label = tk.Label(date_frame, text="Date :")
+        date_label.pack(side=LEFT)
+
+        date_entry = tk.Entry(date_frame)
+        date_entry.pack(side=LEFT)
+
+        """
+        [------------Temps------------]
+        """
+
+        time_frame = tk.Frame(center_frame)
+        time_frame.pack(pady=10)
+
+        time_label = tk.Label(time_frame, text="Temps :")
+        time_label.pack(side=LEFT)
+
+        time_entry = tk.Entry(time_frame)
+        time_entry.pack(side=LEFT)
+
+        """
+        [------------Nb Ok------------]
+        """
+
+        NbOk_frame = tk.Frame(center_frame)
+        NbOk_frame.pack(pady=10)
+
+        NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
+        NbOk_label.pack(side=LEFT)
+
+        NbOk_entry = tk.Entry(NbOk_frame)
+        NbOk_entry.pack(side=LEFT)
+
+        """
+        [------------Nb Total------------]
+        """
+
+        NbTotal_frame = tk.Frame(center_frame)
+        NbTotal_frame.pack(pady=10)
+
+        NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
+        NbTotal_label.pack(side=LEFT)
+
+        NbTotal_entry = tk.Entry(NbTotal_frame)
+        NbTotal_entry.pack(side=LEFT)
+
+        """
+        [------------Submit Button------------]
+        """
+        submit_frame = tk.Frame(window, bg=hex_color)
+        submit_frame.pack()
+
+        submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
+        submit_button.pack(pady=10)
+
+        # lancement infini de la fênetre
+        window.mainloop()
+
+        ###########################################
+
+    # ________________Modify informations________________#
+    def modify_window():
+        if int(modify_entry.get()) > 0:
+            index = modify_entry.get()
+            info_var = get_info_by_id(index)
+            pseudo = info_var[0]
+            exercises = info_var[1]
+            date = info_var[2]
+            duration = info_var[3]
+            nbsuccess = info_var[4]
+            nbtrials = info_var[5]
+        else:
+            print("veuillez entrer un chiffre supérieur à 0")
+
+        # Création de la fênetre
+        window = tk.Tk()
+        window.title("Affichage braintraining")
+        window.geometry("600x600")
+
+        # color définition
+        rgb_color = (139, 201, 194)
+        hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+        window.configure(bg=hex_color)
+
+        # insert informations on DB
+        def button_event():
+            nickname = pseudo_entry.get()
+            exercises = exercise_entry.get()
+            date = date_entry.get()
+            time = time_entry.get()
+            nbsuccess = NbOk_entry.get()
+            nbtrials = NbTotal_entry.get()
+            percentage = (int(nbsuccess) * 100) / int(nbtrials)
+            modify_results(nickname, exercises, date, time, nbsuccess, nbtrials, percentage, index)
+            display_tuple_in_table((top_label_list + apply_filters()))
+            window.destroy()
+
+        space_frame = tk.Frame(window)
+        space_frame.pack(pady=100)
+
+        # Mise en page
+        center_frame = tk.Frame(window)
+        center_frame.pack()
+
+        title_frame = tk.Frame(center_frame)
+        title_frame.pack()
+
+        title_label = tk.Label(title_frame, text="Informations qui peuvent être changé :")
+        title_label.pack()
+
+        """
+        [------------Pseudo------------]
+        """
+
+        pseudo_frame = tk.Frame(center_frame)
+        pseudo_frame.pack(pady=10)
+
+        pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
+        pseudo_label.pack(side=LEFT)
+
+        pseudo_entry = tk.Entry(pseudo_frame)
+        pseudo_entry.insert(0, pseudo)
+        pseudo_entry.pack(side=LEFT)
+
+        """
+        [------------Exercice------------]
+        """
+
+        exercice_frame = tk.Frame(center_frame)
+        exercice_frame.pack(pady=10)
+
+        exercise_label = tk.Label(exercice_frame, text="Exercice :")
+        exercise_label.pack(side=LEFT)
+
+        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15)
+        exercise_entry.insert(0, exercises)
+        exercise_entry.pack(side=LEFT)
+
+        """
+        [------------Date------------]
+        """
+
+        date_frame = tk.Frame(center_frame)
+        date_frame.pack(pady=10)
+
+        date_label = tk.Label(date_frame, text="Date :")
+        date_label.pack(side=LEFT)
+
+        date_entry = tk.Entry(date_frame)
+        date_entry.insert(0, date)
+        date_entry.pack(side=LEFT)
+
+        """
+        [------------Temps------------]
+        """
+
+        time_frame = tk.Frame(center_frame)
+        time_frame.pack(pady=10)
+
+        time_label = tk.Label(time_frame, text="Temps :")
+        time_label.pack(side=LEFT)
+
+        time_entry = tk.Entry(time_frame)
+        time_entry.insert(0, duration)
+        time_entry.pack(side=LEFT)
+
+        """
+        [------------Nb Ok------------]
+        """
+
+        NbOk_frame = tk.Frame(center_frame)
+        NbOk_frame.pack(pady=10)
+
+        NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
+        NbOk_label.pack(side=LEFT)
+
+        NbOk_entry = tk.Entry(NbOk_frame)
+        NbOk_entry.insert(0, nbsuccess)
+        NbOk_entry.pack(side=LEFT)
+
+        """
+        [------------Nb Total------------]
+        """
+
+        NbTotal_frame = tk.Frame(center_frame)
+        NbTotal_frame.pack(pady=10)
+
+        NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
+        NbTotal_label.pack(side=LEFT)
+
+        NbTotal_entry = tk.Entry(NbTotal_frame)
+        NbTotal_entry.insert(0, nbtrials)
+        NbTotal_entry.pack(side=LEFT)
+
+        """
+        [------------Submit Button------------]
+        """
+        submit_frame = tk.Frame(window, bg=hex_color)
+        submit_frame.pack()
+
+        submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
+        submit_button.pack(pady=10)
+
+        # lancement infini de la fênetre
+        window.mainloop()
+
+        #######################################
 
     # Main window
     window = tk.Tk()
@@ -64,7 +393,7 @@ def results():
     exercice_frame.pack(side=LEFT)
     exercice_label = tk.Label(exercice_frame, text="Exercice:")
     exercice_label.pack(side=LEFT)
-    exercice_entry = tk.Entry(exercice_frame)
+    exercice_entry = tk.ttk.Combobox(exercice_frame, values=["", "GEO01", "INFO02", "INFO05"])
     exercice_entry.pack(padx=25)
 
     start_date_frame = tk.Frame(top_side_frame)
@@ -113,9 +442,34 @@ def results():
 
     button_results = tk.Button(results_button_frame, text="Voir résultats")
     button_results.pack()
-    button_results.bind("<Button-1>", lambda e: display_tuple_in_table((top_label_list + get_data_for_result_list())))
 
-    #display()
+    button_results.bind("<Button-1>", lambda e: display_tuple_in_table((top_label_list + apply_filters())))
+
+    crud_frame = tk.Frame(window)
+    crud_frame.pack()
+
+    delete_label = tk.Label(crud_frame, text="Supprimer l'id : ")
+    delete_label.pack(side=LEFT, pady=10, padx=5)
+
+    delete_entry = tk.Entry(crud_frame, width=5)
+    delete_entry.pack(side=LEFT)
+
+    delete_button = tk.Button(crud_frame, text="Supprimer")
+    delete_button.pack(side=LEFT, padx=10)
+
+    delete_button.bind("<Button-1>", lambda e: button_delete_action())
+
+    create_button = tk.Button(crud_frame, text="Insérer un nouveau résultat", command=create_window)
+    create_button.pack(side=LEFT, padx=10)
+
+    modify_label = tk.Label(crud_frame, text="Modifier le résultat de l'id :")
+    modify_label.pack(side=LEFT, padx=10)
+
+    modify_entry = tk.Entry(crud_frame, width=5)
+    modify_entry.pack(side=LEFT)
+
+    modify_button = tk.Button(crud_frame, text="Modifier", command=modify_window)
+    modify_button.pack(side=LEFT, padx=10)
 
     # main loop
     window.mainloop()
