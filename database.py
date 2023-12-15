@@ -72,3 +72,36 @@ def modify_results(nickname, exercices, dates, duration, nb_of_right_answers, to
     id = cursor.lastrowid
     cursor.close()
     return id
+
+
+def get_total_of_nb_of_lines():
+    query = "SELECT COUNT(results.id) FROM results"
+    cursor = db_connection.cursor()
+    cursor.execute(query)
+    total_of_nb_of_lines = cursor.fetchone()
+    cursor.close()
+    return total_of_nb_of_lines[0]
+
+def get_total_time():
+    query = "SELECT SEC_TO_TIME(SUM(time_to_sec(results.duration))) As timeSum FROM results"
+    cursor = db_connection.cursor()
+    cursor.execute(query)
+    total_time = cursor.fetchone()
+    cursor.close()
+    return total_time[0]
+
+def get_total_nb_ok():
+    query = "SELECT SUM(results.nb_of_right_answers) FROM results"
+    cursor = db_connection.cursor()
+    cursor.execute(query)
+    total_nb_ok = cursor.fetchone()
+    cursor.close()
+    return total_nb_ok[0]
+
+def get_total_nb_total():
+    query = "SELECT SUM(results.total_answers) FROM results"
+    cursor = db_connection.cursor()
+    cursor.execute(query)
+    total_nb_total = cursor.fetchone()
+    cursor.close()
+    return total_nb_total[0]

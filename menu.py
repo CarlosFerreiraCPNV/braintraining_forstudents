@@ -11,10 +11,10 @@ import info05
 from result import *
 
 # exercises array
-a_exercise=["geo01", "info02", "info05"]
-albl_image=[None, None, None] # label (with images) array
-a_image=[None, None, None] # images array
-a_title=[None, None, None] # array of title (ex: GEO01)
+a_exercise = ["geo01", "info02", "info05"]
+albl_image = [None, None, None] # label (with images) array
+a_image = [None, None, None] # images array
+a_title = [None, None, None] # array of title (ex: GEO01)
 
 dict_games = {"geo01": geo01.open_window_geo_01, "info02": info02.open_window_info_02, "info05": info05.open_window_info_05}
 
@@ -38,7 +38,7 @@ window.geometry("1100x900")
 rgb_color = (139, 201, 194)
 hex_color = '#%02x%02x%02x' % rgb_color # translation in hexa
 window.configure(bg=hex_color)
-window.grid_columnconfigure((0,1,2), minsize=300, weight=1)
+window.grid_columnconfigure((0, 1, 2), minsize=300, weight=1)
 
 # Title création
 lbl_title = tk.Label(window, text="TRAINING MENU", font=("Arial", 15))
@@ -57,11 +57,11 @@ for ex in range(len(a_exercise)):
 
 # Buttons, display results & quit
 btn_display = tk.Button(window, text="Display results", font=("Arial", 15))
-btn_display.grid(row=1+ 2*len(a_exercise)//3 , column=1)
-btn_display.bind("<Button-1>",lambda e: display_result(e))
+btn_display.grid(row= 1 + 2 * len(a_exercise)//3 , column=1)
+btn_display.bind("<Button-1>", lambda e: display_result(e))
 
 btn_finish = tk.Button(window, text="Quitter", font=("Arial", 15))
-btn_finish.grid(row=2+ 2*len(a_exercise)//3 , column=1)
+btn_finish.grid(row= 2 + 2 * len(a_exercise)//3 , column=1)
 btn_finish.bind("<Button-1>", quit)
 
 # main loop

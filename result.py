@@ -10,29 +10,53 @@ from tkinter import ttk
 from database import *
 
 # TABLEAU DES VALEURS DU JEU
-top_label_list = [("ID","Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
+top_label_list = [("ID", "Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
+top_label_result_list = [("NbLignes", "Temps total", "Nb OK", "Nb Total", "% Total")]
 filters = 0
-filter_variable = [()]
-
 
 # call other windows (exercices)
 def results():
     global filters, exercice, pseudo, filter_variable
     def display_tuple_in_table(mytuple):
-        global filters, exercice, pseudo, filter_variable, info_label
+        global filters, exercice, pseudo, filter_variable, info_label, top_label_result_list
+
+        total_of_nb_of_lines = (get_total_of_nb_of_lines())
+        total_time = (get_total_time())
+        total_nb_ok = (get_total_nb_ok())
+        total_nb_total = (get_total_nb_total())
+        percentage = round((total_nb_ok * 100) / total_nb_total)
+
+        list_total = [("delete")]
+
+        list_total.append(total_of_nb_of_lines)
+        list_total.append(total_time)
+        list_total.append(total_nb_ok)
+        list_total.append(total_nb_total)
+        list_total.append(percentage)
+        list_total.remove("delete")
+
+        list_total_for_append = tuple(list_total)
+
+        top_label_result_list.append(list_total_for_append)
+
+        print(top_label_result_list[1][4])
+
+        display_results(top_label_result_list)
+
         for line in range(0, len(mytuple)):
             for col in range(0, len(mytuple[line])):
                 info_label = tk.Label(list_of_results_frame, text=mytuple[line][col], width=14, font=("Arial", 10))
-                info_label.grid(row=line,column=col,padx=2,pady=2)
+                info_label.grid(row=line,column=col,padx=2,pady=2, sticky='w')
 
             if line > 0:
                 info_label.config(text="")
+                widht_color = round(mytuple[line][7] / 10)
                 if mytuple[line][7] <= 25:
-                    info_label.config(bg="red")
+                    info_label.config(bg="red", width=widht_color, padx=10)
                 if mytuple[line][7] > 25 and mytuple[line][6] < 75:
-                    info_label.config(bg="orange")
+                    info_label.config(bg="orange", width=widht_color, padx=10)
                 if mytuple[line][7] >= 75:
-                    info_label.config(bg="green")
+                    info_label.config(bg="green", width=widht_color, padx=10)
 
     # prend les 4 paramètres et génère une requête spéciale
     def sql_generate():
@@ -76,6 +100,25 @@ def results():
         delete_id = delete_entry.get()
         delete_element_on_result_list_by_id(delete_id)
         display_tuple_in_table((top_label_list + apply_filters()))
+
+
+    def display_results(mytuple):
+        global total_label
+        for line in range(0, len(mytuple)):
+            for col in range(0, len(mytuple[line])):
+                total_label = tk.Label(total_of_results_frame, text=mytuple[line][col], width=14, font=("Arial", 10))
+                total_label.grid(row=line, column=col, padx=2, pady=2)
+
+            if line > 0:
+                total_label.config(text="")
+                widht_color = round(mytuple[line][4] / 10)
+                if mytuple[1][4] <= 25:
+                    total_label.config(bg="red", width=widht_color, padx=10)
+                if mytuple[1][4] > 25 and mytuple[1][4] < 75:
+                    total_label.config(bg="orange", width=widht_color, padx=10)
+                if mytuple[1][4] >= 75:
+                    total_label.config(bg="green", width=widht_color, padx=10)
+
 
 
     #________________INSERT TO DB________________#
@@ -219,6 +262,8 @@ def results():
             duration = info_var[3]
             nbsuccess = info_var[4]
             nbtrials = info_var[5]
+            modify_entry.config(state='disabled')
+            modify_button.config(state='disabled')
         else:
             print("veuillez entrer un chiffre supérieur à 0")
 
@@ -244,6 +289,9 @@ def results():
             modify_results(nickname, exercises, date, time, nbsuccess, nbtrials, percentage, index)
             display_tuple_in_table((top_label_list + apply_filters()))
             window.destroy()
+            modify_entry.config(state='normal')
+            modify_button.config(state='normal')
+
 
         space_frame = tk.Frame(window)
         space_frame.pack(pady=100)
@@ -271,6 +319,7 @@ def results():
         pseudo_entry = tk.Entry(pseudo_frame)
         pseudo_entry.insert(0, pseudo)
         pseudo_entry.pack(side=LEFT)
+        pseudo_entry.config(state='disabled')
 
         """
         [------------Exercice------------]
@@ -285,6 +334,7 @@ def results():
         exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15)
         exercise_entry.insert(0, exercises)
         exercise_entry.pack(side=LEFT)
+        exercise_entry.config(state='disabled')
 
         """
         [------------Date------------]
@@ -299,6 +349,7 @@ def results():
         date_entry = tk.Entry(date_frame)
         date_entry.insert(0, date)
         date_entry.pack(side=LEFT)
+        date_entry.config(state='disabled')
 
         """
         [------------Temps------------]
@@ -416,26 +467,6 @@ def results():
     total_of_results_frame = tk.Frame(window)
     total_of_results_frame.pack(pady=35)
 
-    total_top_side_frame = tk.Frame(total_of_results_frame)
-    total_top_side_frame.pack()
-
-    nb_lignes_label = tk.Label(total_top_side_frame, text="NbLignes\n12")
-    nb_lignes_label.pack(side=LEFT, padx=25)
-
-    temps_total_label = tk.Label(total_top_side_frame, text="Temps total\n0:06:15")
-    temps_total_label.pack(side=LEFT, padx=25)
-
-    nb_ok_label = tk.Label(total_top_side_frame, text="Nb OK\n8")
-    nb_ok_label.pack(side=LEFT, padx=25)
-
-    nb_total_label = tk.Label(total_top_side_frame, text="Nb Total\n15")
-    nb_total_label.pack(side=LEFT, padx=25)
-
-    poucentage_total_label = tk.Label(total_top_side_frame, text="% Total\n 25")
-    poucentage_total_label.pack(side=LEFT, padx=25)
-
-    mise_en_page_frame = tk.Frame(total_top_side_frame, width=295, height=50)
-    mise_en_page_frame.pack(side=RIGHT, padx=25)
 
     results_button_frame = tk.Frame(bottom_side_frame)
     results_button_frame.pack()
