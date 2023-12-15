@@ -1,15 +1,19 @@
-# Training (INFO05)
-# JCY oct 23
-# PRO DB PY
+"""
+Auteur : Carlos Ferreira
+Date : 15.12.2023
+Projet : Brain training for students
+"""
+
 import math
 import tkinter as tk
+from tkinter import messagebox
 from tkinter.messagebox import showinfo          # Les alertes
 import random
 from math import cos, sin, pi
 from colorsys import hsv_to_rgb, rgb_to_hsv
 from math import sqrt
 import time
-import database
+from database import *
 import datetime
 from tkinter.messagebox import *
 
@@ -190,12 +194,8 @@ def sl_v(event):
     display()
 
 
-def save_game(event):
-    print("dans save")
-    #TODO
-
-
 def display_timer():
+    global duration
     duration=datetime.datetime.now()-start_date #elapsed time since beginning, in time with decimals
     duration_s=int(duration.total_seconds()) #idem but in seconds (integer)
     #display min:sec (00:13)
@@ -203,11 +203,36 @@ def display_timer():
     window_info05.after(1000, display_timer) #recommencer après 15 ms
 
 
+# Fonction pour sauvegarder la partie
+def save_game(event):
+    global entry_pseudo, nbtrials, nbsuccess, duration
+    pseudo = entry_pseudo.get()
+    # Calcule le pourcentage
+    percentage = (nbsuccess * 100) / nbtrials
+    # Sauvegarde les données dans la DB
+    save_game_info(pseudo, exercise, start_date, (datetime.datetime.now() - start_date), nbsuccess, nbtrials, percentage)
+    print("dans save")
+
+    # Remets à 0 les données
+    nbtrials = 0
+    nbsuccess = 0
+    duration = 0
+
+    # détruit la fenetre
+    window_info05.destroy()
+
+
 def open_window_info_05(window):
-    global window_info05, lbl_duration, lbl_result, hex_color, start_date, slider_r, slider_g, slider_b, slider_v, entry_response, canvas
+    global window_info05, lbl_duration, lbl_result, hex_color, start_date, slider_r, slider_g, slider_b, slider_v, entry_response, canvas, entry_pseudo
     window_info05 = tk.Toplevel(window)
     window_info05.title("La couleur perdue")
-    window_info05.geometry("1100x900")
+    w = 1100
+    h = 900
+    screen_W = window.winfo_screenwidth()
+    screen_H = window.winfo_screenheight()
+    x = (screen_W / 2) - (w / 2)
+    y = (screen_H / 2) - (h / 2)
+    window.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
     # color définition
     rgb_color = (139, 201, 194)
@@ -271,6 +296,7 @@ def open_window_info_05(window):
     entry_response.bind("<Return>", test)
     slider_v.bind("<ButtonRelease-1>", sl_v)
     btn_finish.bind("<Button-1>", save_game)
+
 
     # main loop
     window_info05.mainloop()

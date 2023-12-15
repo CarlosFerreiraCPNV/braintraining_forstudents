@@ -1,6 +1,6 @@
 """
 Auteur : Carlos Ferreira
-Date : 27.11.2023
+Date : 15.12.2023
 Projet : Brain training for students
 """
 
@@ -32,7 +32,14 @@ def display_result(event):
 # Main window
 window = tk.Tk()
 window.title("Training, entrainement cérébral")
-window.geometry("1100x900")
+# Centre la fenetre au milieu de l'écran
+w = 1100
+h = 900
+screen_W = window.winfo_screenwidth()
+screen_H = window.winfo_screenheight()
+x = (screen_W / 2) - (w / 2)
+y = (screen_H / 2) - (h / 2)
+window.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
 # color définition
 rgb_color = (139, 201, 194)
@@ -63,6 +70,15 @@ btn_display.bind("<Button-1>", lambda e: display_result(e))
 btn_finish = tk.Button(window, text="Quitter", font=("Arial", 15))
 btn_finish.grid(row= 2 + 2 * len(a_exercise)//3 , column=1)
 btn_finish.bind("<Button-1>", quit)
+
+
+# Demande à l'utilisateur s'il veut vraiment fermer la fênetre
+def on_closing():
+    if messagebox.askokcancel("Quitter", "Voulez-vous vraiment quitter ?"):
+        window.destroy()
+
+
+window.protocol("WM_DELETE_WINDOW", on_closing)
 
 # main loop
 window.mainloop()

@@ -1,12 +1,15 @@
-# Training (INFO02)
-# JCY oct 23
-# PRO DB PY
+"""
+Auteur : Carlos Ferreira
+Date : 15.12.2023
+Projet : Brain training for students
+"""
 
 import tkinter as tk
+from tkinter import messagebox
 import random
 from math import pow
 import time
-import database
+from database import *
 import datetime
 from tkinter.messagebox import *
 
@@ -70,20 +73,36 @@ def display_timer():
     lbl_duration.configure(text="{:02d}".format(int(duration_s / 60)) + ":" + "{:02d}".format(duration_s % 60))
     window_info02.after(1000, display_timer)  # recommencer après 15 ms
 
+# Fonction pour sauvegarder la partie
 def save_game(event):
-    global entry_pseudo
+    global entry_pseudo, nbtrials, nbsuccess, duration
     pseudo = entry_pseudo.get()
+    # Calcule le pourcentage
     percentage = (nbsuccess * 100) / nbtrials
+    # Sauvegarde les données dans la DB
     save_game_info(pseudo, exercise, start_date, (datetime.datetime.now() - start_date), nbsuccess, nbtrials, percentage)
     print("dans save")
+    # Remets à 0 les données
+    nbtrials = 0
+    nbsuccess = 0
+    duration = 0
+
+    # détruit la fenetre
+    window_info02.destroy()
 
 def open_window_info_02(window):
-    global window_info02, lbl_duration, lbl_result, entry_n2, label_u2, label_n1, hex_color, start_date
+    global window_info02, lbl_duration, lbl_result, entry_n2, label_u2, label_n1, hex_color, start_date, entry_pseudo
     window_info02 = tk.Toplevel(window)
 
     #window_info02 = tk.Tk()
     window_info02.title("Conversion d'unités")
-    window_info02.geometry("1100x900")
+    w = 1100
+    h = 900
+    screen_W = window.winfo_screenwidth()
+    screen_H = window.winfo_screenheight()
+    x = (screen_W / 2) - (w / 2)
+    y = (screen_H / 2) - (h / 2)
+    window.geometry("%dx%d+%d+%d" % (w, h, x, y))
     window_info02.grid_columnconfigure((0,1,2), minsize=150, weight=1)
 
     # color definition
@@ -128,6 +147,7 @@ def open_window_info_02(window):
     entry_n2.bind("<Return>", test)
     btn_next.bind("<Button-1>", next)
     btn_finish.bind("<Button-1>", save_game)
+
 
     # Main loop
     window_info02.mainloop()

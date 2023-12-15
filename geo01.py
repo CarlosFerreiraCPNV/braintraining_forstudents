@@ -1,10 +1,11 @@
 """
 Auteur : Carlos Ferreira
-Date : 27.11.2023
+Date : 15.12.2023
 Projet : Brain training for students
 """
 
 import tkinter as tk
+from tkinter import messagebox
 import random
 from math import sqrt
 import time
@@ -90,6 +91,7 @@ def next_point(event):
 
 # Affiche le timer
 def display_timer():
+    global duration
     duration=datetime.datetime.now()-start_date #elapsed time since beginning, in time with decimals
     duration_s=int(duration.total_seconds()) #idem but in seconds (integer)
     #display min:sec (00:13)
@@ -98,11 +100,19 @@ def display_timer():
 
 # Fonction pour sauvegarder la partie
 def save_game(event):
-    global entry_pseudo
+    global entry_pseudo, nbtrials, nbsuccess, duration
     pseudo = entry_pseudo.get()
+    # Calcule le pourcentage
     percentage = (nbsuccess * 100) / nbtrials
+    # Sauvegarde les données dans la DB
     save_game_info(pseudo, exercise, start_date, (datetime.datetime.now() - start_date), nbsuccess, nbtrials, percentage)
     print("dans save")
+    # Remets à 0 les données
+    nbtrials = 0  # number of total trials
+    nbsuccess = 0  # number of successfull trials
+    duration = 0
+    # détruit la fenetre
+    window_geo01.destroy()
 
 # Sert à lancer le jeu geo1
 def open_window_geo_01(window):
@@ -111,7 +121,13 @@ def open_window_geo_01(window):
     window_geo01 = tk.Toplevel(window)
 
     window_geo01.title("Exercice de géométrie")
-    window_geo01.geometry("1100x900")
+    w = 1100
+    h = 900
+    screen_W = window.winfo_screenwidth()
+    screen_H = window.winfo_screenheight()
+    x = (screen_W / 2) - (w / 2)
+    y = (screen_H / 2) - (h / 2)
+    window.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
     # color définition
     rgb_color = (139, 201, 194)
@@ -154,6 +170,7 @@ def open_window_geo_01(window):
     canvas.bind("<Button-1>", canvas_click)
     btn_next.bind("<Button-1>", next_point)
     btn_finish.bind("<Button-1>", save_game)
+
 
     # main loop
     window_geo01.mainloop()
