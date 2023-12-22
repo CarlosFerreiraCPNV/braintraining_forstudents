@@ -11,7 +11,7 @@ import mysql.connector
 
 # Retourne le nécessaire pour ce connecter à une DB avec python
 def open_db():
-    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root2', password='', database='training', buffered=True, autocommit=True)
+    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root', password='', database='training', buffered=True, autocommit=True)
 
 # Lancement de la connection
 db_connection = open_db()
@@ -116,3 +116,30 @@ def get_total_nb_total():
     total_nb_total = cursor.fetchone()
     cursor.close()
     return total_nb_total[0]
+
+
+def create_user(username, password):
+    query = "INSERT INTO users (username, password) values (%s,%s)"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (username, password))
+    lastrowid = cursor.lastrowid
+    cursor.close()
+    return lastrowid
+
+
+def verify_user(username):
+    query = "SELECT users.username FROM users WHERE users.username = %s"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (username,))
+    username_var = cursor.fetchone()
+    cursor.close()
+    return username_var
+
+
+def verify_password(username):
+    query = "SELECT users.password FROM users WHERE users.username = %s"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (username,))
+    username_var = cursor.fetchone()
+    cursor.close()
+    return username_var[0]

@@ -8,6 +8,7 @@ import tkinter as tk
 import geo01
 import info02
 import info05
+from login import *
 from result import *
 
 # exercises array
@@ -28,6 +29,9 @@ def display_result(event):
     results()
     print("display_result")
 
+
+def login():
+    create_window_login()
 
 # Main window
 window = tk.Tk()
@@ -62,9 +66,12 @@ for ex in range(len(a_exercise)):
     albl_image[ex].bind("<Button-1>", lambda event, ex = ex :exercise(event=None, exer=a_exercise[ex])) #link to others .py
     print(a_exercise[ex])
 
-# Buttons, display results & quit
+# Buttons, display results, login & quit
+login = tk.Button(window, text="Login", font=("Arial", 15))
+login.grid(row= 1 + 2 * len(a_exercise)//3, column=1)
+login.bind("<Button-1>", lambda e: print())
 btn_display = tk.Button(window, text="Display results", font=("Arial", 15))
-btn_display.grid(row= 1 + 2 * len(a_exercise)//3 , column=1)
+#btn_display.grid(row= 1 + 2 * len(a_exercise)//3 , column=1)
 btn_display.bind("<Button-1>", lambda e: display_result(e))
 
 btn_finish = tk.Button(window, text="Quitter", font=("Arial", 15))

@@ -53,7 +53,7 @@ def results():
 
         top_label_result_list.append(list_total_for_append)
 
-        display_results(top_label_result_list)
+        display_total_of_results(top_label_result_list)
 
         # Création du tableau pour l'affichage
         for line in range(0, len(mytuple)):
@@ -135,7 +135,7 @@ def results():
             display_tuple_in_table((top_label_list + apply_filters()))
 
     # Sert à afficher les resultats totaux
-    def display_results(mytuple):
+    def display_total_of_results(mytuple):
         global total_label
         # Création du tableau pour l'affichage
         for line in range(0, len(mytuple)):
@@ -244,7 +244,7 @@ def results():
         exercise_label = tk.Label(exercice_frame, text="Exercice :")
         exercise_label.pack(side=LEFT)
 
-        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15)
+        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
         exercise_entry.pack(side=LEFT)
 
         """
@@ -441,7 +441,7 @@ def results():
                         exercise_label = tk.Label(exercice_frame, text="Exercice :")
                         exercise_label.pack(side=LEFT)
 
-                        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15)
+                        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
                         exercise_entry.insert(0, exercises)
                         exercise_entry.pack(side=LEFT)
                         exercise_entry.config(state='disabled')
@@ -588,7 +588,7 @@ def results():
     exercice_frame.pack(side=LEFT)
     exercice_label = tk.Label(exercice_frame, text="Exercice:")
     exercice_label.pack(side=LEFT)
-    exercice_entry = tk.ttk.Combobox(exercice_frame, values=["", "GEO01", "INFO02", "INFO05"])
+    exercice_entry = tk.ttk.Combobox(exercice_frame, values=["", "GEO01", "INFO02", "INFO05"], state='readonly')
     exercice_entry.pack(padx=25)
 
     # Création de l'interface pour les filtres (start_date)
