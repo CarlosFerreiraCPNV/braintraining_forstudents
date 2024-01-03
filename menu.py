@@ -19,6 +19,9 @@ a_title = [None, None, None] # array of title (ex: GEO01)
 
 dict_games = {"geo01": geo01.open_window_geo_01, "info02": info02.open_window_info_02, "info05": info05.open_window_info_05}
 
+username_login = ""
+password_login = ""
+
 # call other windows (exercices)
 def exercise(event,exer):
     dict_games[exer](window)
@@ -26,12 +29,9 @@ def exercise(event,exer):
 
 #call display_results
 def display_result(event):
-    results()
+    create_window_login()
     print("display_result")
 
-
-def login():
-    create_window_login()
 
 # Main window
 window = tk.Tk()
@@ -66,18 +66,14 @@ for ex in range(len(a_exercise)):
     albl_image[ex].bind("<Button-1>", lambda event, ex = ex :exercise(event=None, exer=a_exercise[ex])) #link to others .py
     print(a_exercise[ex])
 
-# Buttons, display results, login & quit
-login = tk.Button(window, text="Login", font=("Arial", 15))
-login.grid(row= 1 + 2 * len(a_exercise)//3, column=1)
-login.bind("<Button-1>", lambda e: print())
+# Buttons, display results & quit
 btn_display = tk.Button(window, text="Display results", font=("Arial", 15))
-#btn_display.grid(row= 1 + 2 * len(a_exercise)//3 , column=1)
+btn_display.grid(row=2 + 2 * len(a_exercise)//3, column=1)
 btn_display.bind("<Button-1>", lambda e: display_result(e))
 
 btn_finish = tk.Button(window, text="Quitter", font=("Arial", 15))
-btn_finish.grid(row= 2 + 2 * len(a_exercise)//3 , column=1)
+btn_finish.grid(row= 3 + 2 * len(a_exercise)//3 , column=1)
 btn_finish.bind("<Button-1>", quit)
-
 
 # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
 def on_closing():

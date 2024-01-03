@@ -11,7 +11,7 @@ import mysql.connector
 
 # Retourne le nécessaire pour ce connecter à une DB avec python
 def open_db():
-    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root', password='', database='training', buffered=True, autocommit=True)
+    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root2', password='', database='training', buffered=True, autocommit=True)
 
 # Lancement de la connection
 db_connection = open_db()
@@ -118,28 +118,56 @@ def get_total_nb_total():
     return total_nb_total[0]
 
 
-def create_user(username, password):
-    query = "INSERT INTO users (username, password) values (%s,%s)"
+def create_user(nickname, password, permission_level):
+    query = "INSERT INTO users (nickname, password, permission_level) values (%s,%s,%s)"
     cursor = db_connection.cursor()
-    cursor.execute(query, (username, password))
+    cursor.execute(query, (nickname, password, permission_level))
     lastrowid = cursor.lastrowid
     cursor.close()
     return lastrowid
 
 
-def verify_user(username):
-    query = "SELECT users.username FROM users WHERE users.username = %s"
+def verify_user(nickname):
+    query = "SELECT users.nickname FROM users WHERE users.nickname = %s"
     cursor = db_connection.cursor()
-    cursor.execute(query, (username,))
-    username_var = cursor.fetchone()
+    cursor.execute(query, (nickname,))
+    nickname_var = cursor.fetchone()
     cursor.close()
-    return username_var
+    print(nickname_var)
+    return nickname_var
 
 
-def verify_password(username):
-    query = "SELECT users.password FROM users WHERE users.username = %s"
+def verify_password(nickname):
+    query = "SELECT users.password FROM users WHERE users.nickname = %s"
     cursor = db_connection.cursor()
-    cursor.execute(query, (username,))
-    username_var = cursor.fetchone()
+    cursor.execute(query, (nickname,))
+    nickname_var = cursor.fetchone()
     cursor.close()
-    return username_var[0]
+    return nickname_var[0]
+
+
+def get_permission_level_from_nickname_and_password(nickname, password):
+    query = "SELECT users.permission_level FROM users WHERE users.nickname = %s AND users.password = %s"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (nickname, password))
+    permission_level = cursor.fetchone()
+    cursor.close()
+    return permission_level[0]
+
+
+def get_permission_level_from_nickname(nickname):
+    query = "SELECT users.permission_level FROM users WHERE users.nickname = %s"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (nickname,))
+    permission_level = cursor.fetchone()
+    cursor.close()
+    return permission_level[0]
+
+
+def change_permission_level(nickname):
+    query = "UPDATE users SET users.permission_level = 2 WHERE users.nickname = %s"
+    cursor = db_connection.cursor()
+    cursor.execute(query, (nickname,))
+    lastrowid = cursor.lastrowid
+    cursor.close()
+    return lastrowid

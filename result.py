@@ -5,13 +5,17 @@ Projet : Brain training for students
 """
 import datetime
 import tkinter as tk
+import bcrypt
 from tkinter import *
 from tkinter import ttk, messagebox
 from database import *
 
+
 # Variables
 top_label_list = [("ID", "Elève", "Exercice", "Date", "Temps", "Nb Ok", "Nb Total", "% Total")]
 top_label_result_list = [("NbLignes", "Temps total", "Nb OK", "Nb Total", "% Total")]
+username_info = ""
+password_info = ""
 
 # Fonction qui sert à vérifier le type de données il y a dans un entry
 def check_type(val) :
@@ -25,10 +29,283 @@ def check_type(val) :
         check_type_var = False
     return check_type_var
 
+
+def hash_password(password):
+   password_bytes = password.encode('utf-8')
+   hashed_bytes = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
+   return hashed_bytes.decode('utf-8')
+
+
+def create_window_login():
+    global username_info, password_info
+    def create_window_register():
+        # Désactive tous les autres boutons et entry pour pas qu'on puisse faire d'autres changements
+        # Création de la fênetre
+        window = tk.Tk()
+        window.title("Affichage braintraining")
+        # Centre la fenetre au milieu de l'écran
+        w = 200
+        h = 200
+        screen_W = window.winfo_screenwidth()
+        screen_H = window.winfo_screenheight()
+        x = (screen_W / 2) - (w / 2)
+        y = (screen_H / 2) - (h / 2)
+        window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+
+        # color définition
+        rgb_color = (139, 201, 194)
+        hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+        window.configure(bg=hex_color)
+
+        # register d'un compte
+        def button_event_register():
+            global pseudo_for_verification
+            # récupere les informations
+            pseudo = pseudo_entry_register.get()
+            password = password_entry_register.get()
+
+            hashed_password = hash_password(password)
+            print(hashed_password)
+
+            # S'il n'y a pas de pseudo afficher une alerte sinon continuer le processus
+            if len(pseudo) > 0:
+                pseudo_for_verification = verify_user(pseudo)
+            else:
+                messagebox.showinfo("PSEUDO", "Veuillez entrer un pseudo !")
+
+            # S'il n'y a pas de mot de passe afficher une alerte sinon continuer le processus
+            if len(password) <= 0:
+                messagebox.showinfo("PASSWORD", "Veuillez entrer un mot de passe !")
+            else:
+                # Si le pseudo n'existe pas dans la db créer le compte sinon afficher une erreur
+                if pseudo_for_verification == None:
+                    # insertion dans la db
+                    create_user(pseudo, hashed_password, 1)
+
+                    # Activation des boutons et entrys
+                    submit_button.config(state='normal')
+                    register_button.config(state='normal')
+                    username_entry.config(state='normal')
+                    password_entry.config(state='normal')
+
+                    # détruit la fenetre de create
+                    window.destroy()
+                else:
+                    messagebox.showinfo("ERREUR", "Le pseudo existe déjà !\nVeuillez choisir un autre pseudo.")
+
+        ##########################################
+
+        space_frame_register = tk.Frame(window)
+        space_frame_register.pack(pady=10)
+
+        # Mise en page
+        center_frame_register = tk.Frame(window)
+        center_frame_register.pack()
+
+        title_frame_register = tk.Frame(center_frame_register)
+        title_frame_register.pack()
+
+        title_label_register = tk.Label(title_frame_register, text="Informations pour s'enregistrer :")
+        title_label_register.pack()
+
+        """
+        [------------Pseudo------------]
+        """
+
+        pseudo_frame_register = tk.Frame(center_frame_register)
+        pseudo_frame_register.pack(pady=5)
+
+        pseudo_label_register = tk.Label(pseudo_frame_register, text="Pseudo :")
+        pseudo_label_register.pack()
+
+        pseudo_entry_register = tk.Entry(pseudo_frame_register)
+        pseudo_entry_register.pack()
+
+        """
+        [------------Password------------]
+        """
+
+        password_frame_register = tk.Frame(center_frame_register)
+        password_frame_register.pack(pady=5)
+
+        password_label_register = tk.Label(password_frame_register, text="Mot de passe :")
+        password_label_register.pack()
+
+        password_entry_register = tk.Entry(password_frame_register, show='*')
+        password_entry_register.pack()
+
+        space_frame2_register = tk.Frame(window)
+        space_frame2_register.pack(pady=5)
+
+        submit_frame_register = tk.Frame(window)
+        submit_frame_register.pack()
+
+        submit_button_register = tk.Button(submit_frame_register, text="Submit", command=button_event_register)
+        submit_button_register.pack(side=LEFT)
+
+        # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
+        def on_closing():
+            if messagebox.askokcancel("Attention",
+                                      "Voulez-vous vraiment quitter ?\nLa connection à votre compte ne sera pas établi !"):
+
+                # Activation des boutons et entrys
+                submit_button.config(state='normal')
+                register_button.config(state='normal')
+                username_entry.config(state='normal')
+                password_entry.config(state='normal')
+                # Détruit la fenetre
+                window.destroy()
+
+
+        window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        # lancement infini de la fênetre
+        window.mainloop()
+
+        ###########################################
+
+    # Désactive tous les autres boutons et entry pour pas qu'on puisse faire d'autres changements
+
+
+    # Création de la fênetre
+    window = tk.Tk()
+    window.title("Affichage braintraining")
+    # Centre la fenetre au milieu de l'écran
+    w = 400
+    h = 400
+    screen_W = window.winfo_screenwidth()
+    screen_H = window.winfo_screenheight()
+    x = (screen_W / 2) - (w / 2)
+    y = (screen_H / 2) - (h / 2)
+    window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+
+    # color définition
+    rgb_color = (139, 201, 194)
+    hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+    window.configure(bg=hex_color)
+
+    # login d'un compte
+    def button_event_login():
+        global username_info, password_info
+        # récupere les informations
+        username_login = username_entry.get()
+        password_login = password_entry.get()
+
+        username_for_verify = verify_user(username_login)
+
+        # Si le pseudo n'existe pas afficher une erreur sinon continuer le processus
+        if username_for_verify == None:
+            messagebox.showinfo("PSEUDO", "Votre pseudo n'existe pas!\nVérifier l'écriture de votre pseudo, si dans le cas contraire vous n'avez pas de compte veuillez en créer un en cliquant sur le bouton 'Register'.")
+        else:
+            print(verify_password(username_login))
+            password_for_verify = verify_password(username_login)
+            # CONTINUER A LA RENTREE
+            password_hashed = bytes(password_login, 'utf-8')
+            hashed = bcrypt.hashpw(password_hashed, bcrypt.gensalt())
+            if bcrypt.checkpw(password_hashed, hashed):
+                print("It Matches!")
+            else:
+                print("It Does not Match :(")
+
+            # Si le mdp est pareil que celui qui est dans la db faire la connection sinon afficher un message d'erreur
+            if password_for_verify == password_login:
+                print("=")
+                username_info = username_login
+                password_info = password_login
+                # détruit la fenetre de login
+                window.destroy()
+                results()
+            else:
+                messagebox.showinfo("PASSWORD", "Votre mot de passe est incorrect !")
+
+    ##########################################
+
+    space_frame = tk.Frame(window)
+    space_frame.pack(pady=10)
+
+    # Mise en page
+    center_frame = tk.Frame(window)
+    center_frame.pack()
+
+    title_frame = tk.Frame(center_frame)
+    title_frame.pack()
+
+    title_label = tk.Label(title_frame, text="Informations nécessaires \npour se connecter  :")
+    title_label.pack()
+
+    """
+    [------------Username------------]
+    """
+
+    username_frame = tk.Frame(center_frame)
+    username_frame.pack(pady=5)
+
+    username_label = tk.Label(username_frame, text="Pseudo :")
+    username_label.pack()
+
+    username_entry = tk.Entry(username_frame)
+    username_entry.pack()
+
+    """
+    [------------Password------------]
+    """
+
+    password_frame = tk.Frame(center_frame)
+    password_frame.pack(pady=5)
+
+    password_label = tk.Label(password_frame, text="Mot de passe :")
+    password_label.pack()
+
+    password_entry = tk.Entry(password_frame, show='*')
+    password_entry.pack()
+
+    space_frame2 = tk.Frame(window)
+    space_frame2.pack(pady=5)
+
+    submit_frame = tk.Frame(window)
+    submit_frame.pack()
+
+    submit_button = tk.Button(submit_frame, text="Submit", command=button_event_login)
+    submit_button.pack(side=LEFT)
+
+    def register():
+        # désactivation
+        username_entry.config(state='disabled')
+        password_entry.config(state='disabled')
+        submit_button.config(state='disabled')
+        register_button.config(state='disabled')
+        # lance la fenetre de création d'utilisateur
+        create_window_register()
+
+    register_frame = tk.Frame(window)
+    register_frame.pack()
+
+    register_button = tk.Button(register_frame, text="Register", command=register)
+    register_button.pack(side=LEFT)
+
+
+    # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
+    def on_closing():
+        if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?\nLa création du nouveau résultat ne sera pas prise en compte !"):
+            # Détruit la fenetre
+            window.destroy()
+            # Activation des boutons et entrys
+
+
+    window.protocol("WM_DELETE_WINDOW", on_closing)
+
+    # lancement infini de la fênetre
+    window.mainloop()
+
+    ###########################################
+
 # call other windows (exercices)
 def results():
-    global exercice, pseudo, filter_variable
-
+    global exercice, pseudo, filter_variable, username_info, password_info
+    print(username_info)
+    print(password_info)
+    permision_level = get_permission_level_from_nickname_and_password(username_info, password_info)
+    print(permision_level)
     # Sert à reload l'affichage
     def display_tuple_in_table(mytuple):
         global exercice, pseudo, filter_variable, info_label, top_label_result_list
@@ -126,13 +403,16 @@ def results():
 
     # Sert à supprimer une ligne en fonction de l'id donné
     def button_delete_action():
-        if delete_entry.get() == "":
-            print("Vide")
-            messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
+        if permision_level == 2:
+            if delete_entry.get() == "":
+                print("Vide")
+                messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
+            else:
+                delete_id = delete_entry.get()
+                delete_element_on_result_list_by_id(delete_id)
+                display_tuple_in_table((top_label_list + apply_filters()))
         else:
-            delete_id = delete_entry.get()
-            delete_element_on_result_list_by_id(delete_id)
-            display_tuple_in_table((top_label_list + apply_filters()))
+            messagebox.showinfo("PERMISSION", "Vous ne possedez pas les permissions requises pour cette action")
 
     # Sert à afficher les resultats totaux
     def display_total_of_results(mytuple):
@@ -157,387 +437,500 @@ def results():
     #________________WINDOW INSERT TO DB________________#
     # Sert à créer une interface pour inserer un nouveau résultat
     def create_window():
-        # Désactive tous les autres boutons et entry pour pas qu'on puisse faire d'autres changements
-        modify_entry.config(state='disabled')
-        modify_button.config(state='disabled')
-        delete_button.config(state='disabled')
-        delete_entry.config(state='disabled')
-        create_button.config(state='disabled')
+        if permision_level == 2:
+            # Désactive tous les autres boutons et entry pour pas qu'on puisse faire d'autres changements
+            modify_entry.config(state='disabled')
+            modify_button.config(state='disabled')
+            delete_button.config(state='disabled')
+            delete_entry.config(state='disabled')
+            create_button.config(state='disabled')
 
-        # Création de la fênetre
-        window = tk.Tk()
-        window.title("Affichage braintraining")
-        # Centre la fenetre au milieu de l'écran
-        w = 600
-        h = 600
-        screen_W = window.winfo_screenwidth()
-        screen_H = window.winfo_screenheight()
-        x = (screen_W / 2) - (w / 2)
-        y = (screen_H / 2) - (h / 2)
-        window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+            # Création de la fênetre
+            window = tk.Tk()
+            window.title("Affichage braintraining")
+            # Centre la fenetre au milieu de l'écran
+            w = 600
+            h = 600
+            screen_W = window.winfo_screenwidth()
+            screen_H = window.winfo_screenheight()
+            x = (screen_W / 2) - (w / 2)
+            y = (screen_H / 2) - (h / 2)
+            window.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
-        # color définition
-        rgb_color = (139, 201, 194)
-        hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
-        window.configure(bg=hex_color)
+            # color définition
+            rgb_color = (139, 201, 194)
+            hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+            window.configure(bg=hex_color)
 
-        # insert informations on DB
-        def button_event():
-            # récupere les informations
-            pseudo = pseudo_entry.get()
-            exercise = exercise_entry.get()
-            date = date_entry.get()
-            time = time_entry.get()
-            nbsuccess = NbOk_entry.get()
-            nbtrials = NbTotal_entry.get()
-            percentage = (int(nbsuccess) * 100) / int(nbtrials)
+            # insert informations on DB
+            def button_event():
+                # récupere les informations
+                pseudo = pseudo_entry.get()
+                exercise = exercise_entry.get()
+                date = date_entry.get()
+                time = time_entry.get()
+                nbsuccess = NbOk_entry.get()
+                nbtrials = NbTotal_entry.get()
+                percentage = (int(nbsuccess) * 100) / int(nbtrials)
 
-            # insertion dans la db
-            insert_into_db_from_list_of_data(pseudo, exercise, date, time, nbsuccess, nbtrials, percentage)
-            # reload l'affichage
-            display_tuple_in_table((top_label_list + apply_filters()))
+                # insertion dans la db
+                insert_into_db_from_list_of_data(pseudo, exercise, date, time, nbsuccess, nbtrials, percentage)
+                # reload l'affichage
+                display_tuple_in_table((top_label_list + apply_filters()))
 
-            # détruit la fenetre de create
-            window.destroy()
-            # Active les entrys et boutons
-            modify_entry.config(state="normal")
-            modify_button.config(state="normal")
-            delete_button.config(state='normal')
-            delete_entry.config(state='normal')
-            create_button.config(state='normal')
-
-        ##########################################
-
-        space_frame = tk.Frame(window)
-        space_frame.pack(pady=70)
-
-        # Mise en page
-        center_frame = tk.Frame(window)
-        center_frame.pack()
-
-        title_frame = tk.Frame(center_frame)
-        title_frame.pack()
-
-        title_label = tk.Label(title_frame, text="Informations à insérer :")
-        title_label.pack()
-
-        """
-        [------------Pseudo------------]
-        """
-
-        pseudo_frame = tk.Frame(center_frame)
-        pseudo_frame.pack(pady=10)
-
-        pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
-        pseudo_label.pack(side=LEFT)
-
-        pseudo_entry = tk.Entry(pseudo_frame)
-        pseudo_entry.pack(side=LEFT)
-
-        """
-        [------------Exercice------------]
-        """
-
-        exercice_frame = tk.Frame(center_frame)
-        exercice_frame.pack(pady=10)
-
-        exercise_label = tk.Label(exercice_frame, text="Exercice :")
-        exercise_label.pack(side=LEFT)
-
-        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
-        exercise_entry.pack(side=LEFT)
-
-        """
-        [------------Date------------]
-        """
-
-        date_frame = tk.Frame(center_frame)
-        date_frame.pack(pady=10)
-
-        date_label = tk.Label(date_frame, text="Date :")
-        date_label.pack(side=LEFT)
-
-        date_entry = tk.Entry(date_frame)
-        date_entry.pack(side=LEFT)
-
-        """
-        [------------Temps------------]
-        """
-
-        time_frame = tk.Frame(center_frame)
-        time_frame.pack(pady=10)
-
-        time_label = tk.Label(time_frame, text="Temps :")
-        time_label.pack(side=LEFT)
-
-        time_entry = tk.Entry(time_frame)
-        time_entry.pack(side=LEFT)
-
-        """
-        [------------Nb Ok------------]
-        """
-
-        NbOk_frame = tk.Frame(center_frame)
-        NbOk_frame.pack(pady=10)
-
-        NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
-        NbOk_label.pack(side=LEFT)
-
-        NbOk_entry = tk.Entry(NbOk_frame)
-        NbOk_entry.pack(side=LEFT)
-
-        """
-        [------------Nb Total------------]
-        """
-
-        NbTotal_frame = tk.Frame(center_frame)
-        NbTotal_frame.pack(pady=10)
-
-        NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
-        NbTotal_label.pack(side=LEFT)
-
-        NbTotal_entry = tk.Entry(NbTotal_frame)
-        NbTotal_entry.pack(side=LEFT)
-
-        """
-        [------------Submit Button------------]
-        """
-        submit_frame = tk.Frame(window, bg=hex_color)
-        submit_frame.pack()
-
-        submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
-        submit_button.pack(pady=10)
-
-        # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
-        def on_closing():
-            if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?\nLa création du nouveau résultat ne sera pas prise en compte !"):
-                # Détruit la fenetre
+                # détruit la fenetre de create
                 window.destroy()
-                # Activation des boutons et entrys
+                # Active les entrys et boutons
                 modify_entry.config(state="normal")
                 modify_button.config(state="normal")
                 delete_button.config(state='normal')
                 delete_entry.config(state='normal')
                 create_button.config(state='normal')
 
-        window.protocol("WM_DELETE_WINDOW", on_closing)
+            ##########################################
 
-        # lancement infini de la fênetre
-        window.mainloop()
+            space_frame = tk.Frame(window)
+            space_frame.pack(pady=70)
 
-        ###########################################
+            # Mise en page
+            center_frame = tk.Frame(window)
+            center_frame.pack()
+
+            title_frame = tk.Frame(center_frame)
+            title_frame.pack()
+
+            title_label = tk.Label(title_frame, text="Informations à insérer :")
+            title_label.pack()
+
+            """
+            [------------Pseudo------------]
+            """
+
+            pseudo_frame = tk.Frame(center_frame)
+            pseudo_frame.pack(pady=10)
+
+            pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
+            pseudo_label.pack(side=LEFT)
+
+            pseudo_entry = tk.Entry(pseudo_frame)
+            pseudo_entry.pack(side=LEFT)
+
+            """
+            [------------Exercice------------]
+            """
+
+            exercice_frame = tk.Frame(center_frame)
+            exercice_frame.pack(pady=10)
+
+            exercise_label = tk.Label(exercice_frame, text="Exercice :")
+            exercise_label.pack(side=LEFT)
+
+            exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
+            exercise_entry.pack(side=LEFT)
+
+            """
+            [------------Date------------]
+            """
+
+            date_frame = tk.Frame(center_frame)
+            date_frame.pack(pady=10)
+
+            date_label = tk.Label(date_frame, text="Date :")
+            date_label.pack(side=LEFT)
+
+            date_entry = tk.Entry(date_frame)
+            date_entry.pack(side=LEFT)
+
+            """
+            [------------Temps------------]
+            """
+
+            time_frame = tk.Frame(center_frame)
+            time_frame.pack(pady=10)
+
+            time_label = tk.Label(time_frame, text="Temps :")
+            time_label.pack(side=LEFT)
+
+            time_entry = tk.Entry(time_frame)
+            time_entry.pack(side=LEFT)
+
+            """
+            [------------Nb Ok------------]
+            """
+
+            NbOk_frame = tk.Frame(center_frame)
+            NbOk_frame.pack(pady=10)
+
+            NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
+            NbOk_label.pack(side=LEFT)
+
+            NbOk_entry = tk.Entry(NbOk_frame)
+            NbOk_entry.pack(side=LEFT)
+
+            """
+            [------------Nb Total------------]
+            """
+
+            NbTotal_frame = tk.Frame(center_frame)
+            NbTotal_frame.pack(pady=10)
+
+            NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
+            NbTotal_label.pack(side=LEFT)
+
+            NbTotal_entry = tk.Entry(NbTotal_frame)
+            NbTotal_entry.pack(side=LEFT)
+
+            """
+            [------------Submit Button------------]
+            """
+            submit_frame = tk.Frame(window, bg=hex_color)
+            submit_frame.pack()
+
+            submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
+            submit_button.pack(pady=10)
+
+            # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
+            def on_closing():
+                if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?\nLa création du nouveau résultat ne sera pas prise en compte !"):
+                    # Détruit la fenetre
+                    window.destroy()
+                    # Activation des boutons et entrys
+                    modify_entry.config(state="normal")
+                    modify_button.config(state="normal")
+                    delete_button.config(state='normal')
+                    delete_entry.config(state='normal')
+                    create_button.config(state='normal')
+
+            window.protocol("WM_DELETE_WINDOW", on_closing)
+
+            # lancement infini de la fênetre
+            window.mainloop()
+
+            ###########################################
+
+        else:
+            messagebox.showinfo("PERMISSION", "Vous ne possedez pas les permissions requises pour cette action")
 
     # ________________Modify informations________________#
     # Création de l'interface pour modifier les informations d'un résultat
     def modify_window():
-        # vérifie que l'entré est un int
-        check_entry = check_type(modify_entry.get())
-        if check_entry == True:
-            # Si c'est vide afficher une erreur
-            if modify_entry.get() == "":
-                print("vide")
-                messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
-            else:
-                # Essaye d'afficher la fenetre
-                try:
-                    if int(modify_entry.get()) > 0:
-                        index = modify_entry.get()
-                        info_var = get_info_by_id(index)
-                        pseudo = info_var[0]
-                        exercises = info_var[1]
-                        date = info_var[2]
-                        duration = info_var[3]
-                        nbsuccess = info_var[4]
-                        nbtrials = info_var[5]
+        if permision_level == 2:
+            # vérifie que l'entré est un int
+            check_entry = check_type(modify_entry.get())
+            if check_entry == True:
+                # Si c'est vide afficher une erreur
+                if modify_entry.get() == "":
+                    print("vide")
+                    messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
+                else:
+                    # Essaye d'afficher la fenetre
+                    try:
+                        if int(modify_entry.get()) > 0:
+                            index = modify_entry.get()
+                            info_var = get_info_by_id(index)
+                            pseudo = info_var[0]
+                            exercises = info_var[1]
+                            date = info_var[2]
+                            duration = info_var[3]
+                            nbsuccess = info_var[4]
+                            nbtrials = info_var[5]
 
-                        # désactive les boutons et entrys
-                        modify_entry.config(state='disabled')
-                        modify_button.config(state='disabled')
-                        delete_button.config(state='disabled')
-                        delete_entry.config(state='disabled')
-                        create_button.config(state='disabled')
+                            # désactive les boutons et entrys
+                            modify_entry.config(state='disabled')
+                            modify_button.config(state='disabled')
+                            delete_button.config(state='disabled')
+                            delete_entry.config(state='disabled')
+                            create_button.config(state='disabled')
 
-                        # Création de la fênetre
-                        window = tk.Tk()
-                        window.title("Affichage braintraining")
-                        # Centre la fenetre au milieu de l'écran
-                        w = 600
-                        h = 600
-                        screen_W = window.winfo_screenwidth()
-                        screen_H = window.winfo_screenheight()
-                        x = (screen_W / 2) - (w / 2)
-                        y = (screen_H / 2) - (h / 2)
-                        window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+                            # Création de la fênetre
+                            window = tk.Tk()
+                            window.title("Affichage braintraining")
+                            # Centre la fenetre au milieu de l'écran
+                            w = 600
+                            h = 600
+                            screen_W = window.winfo_screenwidth()
+                            screen_H = window.winfo_screenheight()
+                            x = (screen_W / 2) - (w / 2)
+                            y = (screen_H / 2) - (h / 2)
+                            window.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
-                        # color définition
-                        rgb_color = (139, 201, 194)
-                        hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
-                        window.configure(bg=hex_color)
+                            # color définition
+                            rgb_color = (139, 201, 194)
+                            hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+                            window.configure(bg=hex_color)
 
-                        # insert informations on DB
-                        def button_event():
-                            # recuperations d'informations requises
-                            nickname = pseudo_entry.get()
-                            exercises = exercise_entry.get()
-                            date = date_entry.get()
-                            time = time_entry.get()
-                            nbsuccess = NbOk_entry.get()
-                            nbtrials = NbTotal_entry.get()
-                            percentage = (int(nbsuccess) * 100) / int(nbtrials)
+                            # insert informations on DB
+                            def button_event():
+                                # recuperations d'informations requises
+                                nickname = pseudo_entry.get()
+                                exercises = exercise_entry.get()
+                                date = date_entry.get()
+                                time = time_entry.get()
+                                nbsuccess = NbOk_entry.get()
+                                nbtrials = NbTotal_entry.get()
+                                percentage = (int(nbsuccess) * 100) / int(nbtrials)
 
-                            # modifie les résultats dans la db
-                            modify_results(nickname, exercises, date, time, nbsuccess, nbtrials, percentage, index)
+                                # modifie les résultats dans la db
+                                modify_results(nickname, exercises, date, time, nbsuccess, nbtrials, percentage, index)
 
-                            # affiche les résultats
-                            display_tuple_in_table((top_label_list + apply_filters()))
+                                # affiche les résultats
+                                display_tuple_in_table((top_label_list + apply_filters()))
 
-                            # détruit la fenetre
-                            window.destroy()
-
-                            # active les boutons et entrys
-                            modify_entry.config(state='normal')
-                            modify_button.config(state='normal')
-                            delete_button.config(state='normal')
-                            delete_entry.config(state='normal')
-                            create_button.config(state='normal')
-
-                        ################################################
-
-                        space_frame = tk.Frame(window)
-                        space_frame.pack(pady=100)
-
-                        # Mise en page
-                        center_frame = tk.Frame(window)
-                        center_frame.pack()
-
-                        title_frame = tk.Frame(center_frame)
-                        title_frame.pack()
-
-                        title_label = tk.Label(title_frame, text="Informations qui peuvent être changé :")
-                        title_label.pack()
-
-                        """
-                        [------------Pseudo------------]
-                        """
-
-                        pseudo_frame = tk.Frame(center_frame)
-                        pseudo_frame.pack(pady=10)
-
-                        pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
-                        pseudo_label.pack(side=LEFT)
-
-                        pseudo_entry = tk.Entry(pseudo_frame)
-                        pseudo_entry.insert(0, pseudo)
-                        pseudo_entry.pack(side=LEFT)
-                        pseudo_entry.config(state='disabled')
-
-                        """
-                        [------------Exercice------------]
-                        """
-
-                        exercice_frame = tk.Frame(center_frame)
-                        exercice_frame.pack(pady=10)
-
-                        exercise_label = tk.Label(exercice_frame, text="Exercice :")
-                        exercise_label.pack(side=LEFT)
-
-                        exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
-                        exercise_entry.insert(0, exercises)
-                        exercise_entry.pack(side=LEFT)
-                        exercise_entry.config(state='disabled')
-
-                        """
-                        [------------Date------------]
-                        """
-
-                        date_frame = tk.Frame(center_frame)
-                        date_frame.pack(pady=10)
-
-                        date_label = tk.Label(date_frame, text="Date :")
-                        date_label.pack(side=LEFT)
-
-                        date_entry = tk.Entry(date_frame)
-                        date_entry.insert(0, date)
-                        date_entry.pack(side=LEFT)
-                        date_entry.config(state='disabled')
-
-                        """
-                        [------------Temps------------]
-                        """
-
-                        time_frame = tk.Frame(center_frame)
-                        time_frame.pack(pady=10)
-
-                        time_label = tk.Label(time_frame, text="Temps :")
-                        time_label.pack(side=LEFT)
-
-                        time_entry = tk.Entry(time_frame)
-                        time_entry.insert(0, duration)
-                        time_entry.pack(side=LEFT)
-
-                        """
-                        [------------Nb Ok------------]
-                        """
-
-                        NbOk_frame = tk.Frame(center_frame)
-                        NbOk_frame.pack(pady=10)
-
-                        NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
-                        NbOk_label.pack(side=LEFT)
-
-                        NbOk_entry = tk.Entry(NbOk_frame)
-                        NbOk_entry.insert(0, nbsuccess)
-                        NbOk_entry.pack(side=LEFT)
-
-                        """
-                        [------------Nb Total------------]
-                        """
-
-                        NbTotal_frame = tk.Frame(center_frame)
-                        NbTotal_frame.pack(pady=10)
-
-                        NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
-                        NbTotal_label.pack(side=LEFT)
-
-                        NbTotal_entry = tk.Entry(NbTotal_frame)
-                        NbTotal_entry.insert(0, nbtrials)
-                        NbTotal_entry.pack(side=LEFT)
-
-                        """
-                        [------------Submit Button------------]
-                        """
-                        submit_frame = tk.Frame(window, bg=hex_color)
-                        submit_frame.pack()
-
-                        submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
-                        submit_button.pack(pady=10)
-
-                        # Demande à l'utilisateur s'il est sur de fermer la fenetre
-                        def on_closing():
-                            if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?\nVos modifications ne seront pas prises en compte !"):
-                                # Supprime la fenetre de modification
+                                # détruit la fenetre
                                 window.destroy()
-                                # Active les boutons
-                                modify_entry.config(state="normal")
-                                modify_button.config(state="normal")
+
+                                # active les boutons et entrys
+                                modify_entry.config(state='normal')
+                                modify_button.config(state='normal')
                                 delete_button.config(state='normal')
                                 delete_entry.config(state='normal')
                                 create_button.config(state='normal')
 
-                        window.protocol("WM_DELETE_WINDOW", on_closing)
+                            ################################################
 
-                        # lancement infini de la fênetre
-                        window.mainloop()
+                            space_frame = tk.Frame(window)
+                            space_frame.pack(pady=100)
 
-                        #######################################
-                    # Affiche un message d'erreur si le chiffre est 0 ou inferieur à 0
-                    else:
-                        messagebox.showinfo("Erreur", "Veuillez entrer un chiffre supérieur à 0 !")
-                except:
-                    print()
-        # Affiche ce message si on à pas écrit un chiffre
+                            # Mise en page
+                            center_frame = tk.Frame(window)
+                            center_frame.pack()
+
+                            title_frame = tk.Frame(center_frame)
+                            title_frame.pack()
+
+                            title_label = tk.Label(title_frame, text="Informations qui peuvent être changé :")
+                            title_label.pack()
+
+                            """
+                            [------------Pseudo------------]
+                            """
+
+                            pseudo_frame = tk.Frame(center_frame)
+                            pseudo_frame.pack(pady=10)
+
+                            pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
+                            pseudo_label.pack(side=LEFT)
+
+                            pseudo_entry = tk.Entry(pseudo_frame)
+                            pseudo_entry.insert(0, pseudo)
+                            pseudo_entry.pack(side=LEFT)
+                            pseudo_entry.config(state='disabled')
+
+                            """
+                            [------------Exercice------------]
+                            """
+
+                            exercice_frame = tk.Frame(center_frame)
+                            exercice_frame.pack(pady=10)
+
+                            exercise_label = tk.Label(exercice_frame, text="Exercice :")
+                            exercise_label.pack(side=LEFT)
+
+                            exercise_entry = tk.ttk.Combobox(exercice_frame, values=["GEO01", "INFO02", "INFO05"], width=15, state='readonly')
+                            exercise_entry.insert(0, exercises)
+                            exercise_entry.pack(side=LEFT)
+                            exercise_entry.config(state='disabled')
+
+                            """
+                            [------------Date------------]
+                            """
+
+                            date_frame = tk.Frame(center_frame)
+                            date_frame.pack(pady=10)
+
+                            date_label = tk.Label(date_frame, text="Date :")
+                            date_label.pack(side=LEFT)
+
+                            date_entry = tk.Entry(date_frame)
+                            date_entry.insert(0, date)
+                            date_entry.pack(side=LEFT)
+                            date_entry.config(state='disabled')
+
+                            """
+                            [------------Temps------------]
+                            """
+
+                            time_frame = tk.Frame(center_frame)
+                            time_frame.pack(pady=10)
+
+                            time_label = tk.Label(time_frame, text="Temps :")
+                            time_label.pack(side=LEFT)
+
+                            time_entry = tk.Entry(time_frame)
+                            time_entry.insert(0, duration)
+                            time_entry.pack(side=LEFT)
+
+                            """
+                            [------------Nb Ok------------]
+                            """
+
+                            NbOk_frame = tk.Frame(center_frame)
+                            NbOk_frame.pack(pady=10)
+
+                            NbOk_label = tk.Label(NbOk_frame, text="Nb Ok :")
+                            NbOk_label.pack(side=LEFT)
+
+                            NbOk_entry = tk.Entry(NbOk_frame)
+                            NbOk_entry.insert(0, nbsuccess)
+                            NbOk_entry.pack(side=LEFT)
+
+                            """
+                            [------------Nb Total------------]
+                            """
+
+                            NbTotal_frame = tk.Frame(center_frame)
+                            NbTotal_frame.pack(pady=10)
+
+                            NbTotal_label = tk.Label(NbTotal_frame, text="Nb Total :")
+                            NbTotal_label.pack(side=LEFT)
+
+                            NbTotal_entry = tk.Entry(NbTotal_frame)
+                            NbTotal_entry.insert(0, nbtrials)
+                            NbTotal_entry.pack(side=LEFT)
+
+                            """
+                            [------------Submit Button------------]
+                            """
+                            submit_frame = tk.Frame(window, bg=hex_color)
+                            submit_frame.pack()
+
+                            submit_button = tk.Button(submit_frame, text="SUBMIT", command=button_event)
+                            submit_button.pack(pady=10)
+
+                            # Demande à l'utilisateur s'il est sur de fermer la fenetre
+                            def on_closing():
+                                if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?\nVos modifications ne seront pas prises en compte !"):
+                                    # Supprime la fenetre de modification
+                                    window.destroy()
+                                    # Active les boutons
+                                    modify_entry.config(state="normal")
+                                    modify_button.config(state="normal")
+                                    delete_button.config(state='normal')
+                                    delete_entry.config(state='normal')
+                                    create_button.config(state='normal')
+
+                            window.protocol("WM_DELETE_WINDOW", on_closing)
+
+                            # lancement infini de la fênetre
+                            window.mainloop()
+
+                            #######################################
+                        # Affiche un message d'erreur si le chiffre est 0 ou inferieur à 0
+                        else:
+                            messagebox.showinfo("Erreur", "Veuillez entrer un chiffre supérieur à 0 !")
+                    except:
+                        print()
+            # Affiche ce message si on à pas écrit un chiffre
+            else:
+                messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
         else:
-            messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
+            messagebox.showinfo("PERMISSION", "Vous ne possedez pas les permissions requises pour cette action")
+
+
+    def add_permission():
+        if permision_level == 2:
+            # active les boutons et entrys
+            modify_entry.config(state='disabled')
+            modify_button.config(state='disabled')
+            delete_button.config(state='disabled')
+            delete_entry.config(state='disabled')
+            create_button.config(state='disabled')
+            btn_add_permission.config(state='disabled')
+
+            def submit_new_permissions():
+                username_for_permission = pseudo_entry.get()
+                username_for_verify_permissions = verify_user(username_for_permission)
+
+                # Si le pseudo n'existe pas afficher une erreur sinon continuer le processus
+                if username_for_verify_permissions is None:
+                    messagebox.showinfo("PSEUDO",
+                                        "Le pseudo entrée n'existe pas!\nVérifier l'écriture du pseudo")
+                else:
+                    permision_level_from_nickname = get_permission_level_from_nickname(username_for_verify_permissions)
+                    if permision_level_from_nickname == 2:
+                        messagebox.showinfo("PERMISSIONS", "L'utilisateur que vous essayez d'octroyer des permissions à déjà les permissions les plus hautes.")
+                    else:
+                        change_permission_level(username_for_verify_permissions)
+
+                        # détruit la fenetre
+                        window.destroy()
+
+                        messagebox.showinfo("PERMISSIONS", "Vous avez octroyé les permissions avec succées!")
+
+                        # active les boutons et entrys
+                        modify_entry.config(state='normal')
+                        modify_button.config(state='normal')
+                        delete_button.config(state='normal')
+                        delete_entry.config(state='normal')
+                        create_button.config(state='normal')
+                        btn_add_permission.config(state='normal')
+
+            # Création de la fênetre
+            window = tk.Tk()
+            window.title("Affichage braintraining")
+            # Centre la fenetre au milieu de l'écran
+            w = 600
+            h = 600
+            screen_W = window.winfo_screenwidth()
+            screen_H = window.winfo_screenheight()
+            x = (screen_W / 2) - (w / 2)
+            y = (screen_H / 2) - (h / 2)
+            window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+
+            # color définition
+            rgb_color = (139, 201, 194)
+            hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
+            window.configure(bg=hex_color)
+
+            ################################################
+
+            space_frame = tk.Frame(window)
+            space_frame.pack(pady=100)
+
+            # Mise en page
+            center_frame = tk.Frame(window)
+            center_frame.pack()
+
+            title_frame = tk.Frame(center_frame)
+            title_frame.pack()
+
+            title_label = tk.Label(title_frame, text="Informations nécessaires pour changer le niveau de permissions :")
+            title_label.pack()
+
+            """
+            [------------Pseudo------------]
+            """
+
+            pseudo_frame = tk.Frame(center_frame)
+            pseudo_frame.pack(pady=10)
+
+            pseudo_label = tk.Label(pseudo_frame, text="Pseudo :")
+            pseudo_label.pack(side=LEFT)
+
+            pseudo_entry = tk.Entry(pseudo_frame)
+            pseudo_entry.pack(side=LEFT)
+
+            """
+            [------------Submit Button------------]
+            """
+            submit_frame = tk.Frame(window, bg=hex_color)
+            submit_frame.pack()
+
+            submit_button = tk.Button(submit_frame, text="SUBMIT", command=submit_new_permissions)
+            submit_button.pack(pady=10)
+
+
+            # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
+            def on_closing():
+                if messagebox.askokcancel("Attention", "Voulez-vous vraiment quitter ?"):
+                    # supprimer la fenetre
+                    window.destroy()
+
+            window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        else:
+            messagebox.showinfo("PERMISSION", "Vous ne possedez pas les permissions requises pour cette action")
+
 
     # Main window
     window = tk.Tk()
@@ -581,6 +974,8 @@ def results():
     pseudo_label = tk.Label(pseudo_frame, text="Pseudo:")
     pseudo_label.pack(side=LEFT)
     pseudo_entry = tk.Entry(pseudo_frame)
+    pseudo_entry.insert(0, username_info)
+    pseudo_entry.config(state='disabled')
     pseudo_entry.pack(padx=20)
 
     # Création de l'interface pour les filtres (exercice)
@@ -652,6 +1047,14 @@ def results():
 
     modify_button = tk.Button(crud_frame, text="Modifier", command=modify_window)
     modify_button.pack(side=LEFT, padx=10)
+
+    btn_add_permission = tk.Button(crud_frame, text="Octroyer des permissions")
+    btn_add_permission.pack(side=LEFT, padx=10)
+    btn_add_permission.bind("<Button-1>", lambda e: add_permission())
+
+    btn_logout = tk.Button(window, text="Logout", font=("Arial", 10))
+    btn_logout.pack(pady=10)
+    btn_logout.bind("<Button-1>", lambda e: window.destroy())
 
     # Demande à l'utilisateur s'il veut vraiment fermer la fênetre
     def on_closing():

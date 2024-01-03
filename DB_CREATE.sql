@@ -26,16 +26,40 @@ DROP TABLE IF EXISTS `training`.`results` ;
 CREATE TABLE IF NOT EXISTS `training`.`results` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nickname` VARCHAR(45) NOT NULL,
-  `exercices` VARCHAR(45) NULL,
+  `exercises` VARCHAR(45) NULL,
   `dates` DATETIME NULL,
   `duration` TIME NULL,
   `nb_of_right_answers` INT NULL,
   `total_answers` INT NULL,
-  `percentages` INT NULL,
+  `percentage` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `training`.`users`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `training`.`users` ;
+
+CREATE TABLE IF NOT EXISTS `training`.`users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nickname` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(64) NOT NULL,
+  `permission_level` INT(1) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+INSERT INTO results (id, nickname, exercises, dates, duration, nb_of_right_answers, total_answers, percentage) 
+	VALUES (1, "chavey", "GEO01", "2024-01-01 15:51:38", "00:00:28", 8, 8, 100),
+			 (2, "chavey", "INFO02", "2024-01-02 15:51:38", "00:00:38", 6, 8, 75),
+			 (3, "chavey", "INFO05", "2024-01-03 15:51:38", "00:00:38", 4, 8, 50),
+			 (4, "carlos", "GEO01", "2023-12-30 15:51:38", "00:00:18", 2, 8, 25);
+
+
+INSERT INTO users (id, nickname, password, permission_level) 
+	VALUES (1, "chavey", "123", 1),
+			 (2, "carlos", "123",0);

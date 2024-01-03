@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk, messagebox
-#from register import create_window_register
+from database import *
 
 
 #________________WINDOW INSERT TO DB________________#
@@ -158,12 +158,13 @@ def create_window_login():
         password = password_entry.get()
 
         username_for_verify = verify_user(username)
-        password_for_verify = verify_password(username)
 
         # Si le pseudo n'existe pas afficher une erreur sinon continuer le processus
         if username_for_verify == None:
             messagebox.showinfo("PSEUDO", "Votre pseudo n'existe pas!\nVérifier l'écriture de votre pseudo, si dans le cas contraire vous n'avez pas de compte veuillez en créer un en cliquant sur le bouton 'Register'.")
         else:
+            print(verify_password(username))
+            password_for_verify = verify_password(username)
             # Si le mdp est pareil que celui qui est dans la db faire la connection sinon afficher un message d'erreur
             if password_for_verify == password:
                 print("=")
@@ -252,6 +253,3 @@ def create_window_login():
     window.mainloop()
 
     ###########################################
-
-
-create_window_login()

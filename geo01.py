@@ -121,13 +121,7 @@ def open_window_geo_01(window):
     window_geo01 = tk.Toplevel(window)
 
     window_geo01.title("Exercice de géométrie")
-    w = 1100
-    h = 900
-    screen_W = window.winfo_screenwidth()
-    screen_H = window.winfo_screenheight()
-    x = (screen_W / 2) - (w / 2)
-    y = (screen_H / 2) - (h / 2)
-    window.geometry("%dx%d+%d+%d" % (w, h, x, y))
+    window_geo01.geometry("1100x900")
 
     # color définition
     rgb_color = (139, 201, 194)
