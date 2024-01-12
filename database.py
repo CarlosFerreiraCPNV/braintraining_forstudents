@@ -11,7 +11,7 @@ import mysql.connector
 
 # Retourne le nécessaire pour ce connecter à une DB avec python
 def open_db():
-    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root2', password='', database='training', buffered=True, autocommit=True)
+    return mysql.connector.connect(host='127.0.0.1', port='3306', user='root', password='', database='training', buffered=True, autocommit=True)
 
 # Lancement de la connection
 db_connection = open_db()
@@ -137,7 +137,7 @@ def verify_user(nickname):
     return nickname_var
 
 
-def verify_password(nickname):
+def get_password_by_nickname(nickname):
     query = "SELECT users.password FROM users WHERE users.nickname = %s"
     cursor = db_connection.cursor()
     cursor.execute(query, (nickname,))
@@ -146,6 +146,7 @@ def verify_password(nickname):
     return nickname_var[0]
 
 
+# Sert à avoir le niveau de permission via le pseudo et le mdp
 def get_permission_level_from_nickname_and_password(nickname, password):
     query = "SELECT users.permission_level FROM users WHERE users.nickname = %s AND users.password = %s"
     cursor = db_connection.cursor()
@@ -155,6 +156,7 @@ def get_permission_level_from_nickname_and_password(nickname, password):
     return permission_level[0]
 
 
+# Sert à avoir le niveau de permissions via le pseudo
 def get_permission_level_from_nickname(nickname):
     query = "SELECT users.permission_level FROM users WHERE users.nickname = %s"
     cursor = db_connection.cursor()

@@ -8,7 +8,6 @@ import tkinter as tk
 import geo01
 import info02
 import info05
-from login import *
 from result import *
 
 # exercises array
@@ -30,7 +29,6 @@ def exercise(event,exer):
 #call display_results
 def display_result(event):
     create_window_login()
-    print("display_result")
 
 
 # Main window

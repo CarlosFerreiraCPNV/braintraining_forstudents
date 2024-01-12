@@ -30,14 +30,17 @@ def check_type(val) :
     return check_type_var
 
 
+# Sert à hasher un mot de passe à partir d'un string donné en parametre
 def hash_password(password):
    password_bytes = password.encode('utf-8')
    hashed_bytes = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
-   return hashed_bytes.decode('utf-8')
+   return hashed_bytes
 
 
+# Sert à créer une fenetre pour se connecter avec un compte
 def create_window_login():
     global username_info, password_info
+    # Sert à créer une fenetre pour s'enregistrer un compte
     def create_window_register():
         # Désactive tous les autres boutons et entry pour pas qu'on puisse faire d'autres changements
         # Création de la fênetre
@@ -57,7 +60,7 @@ def create_window_login():
         hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
         window.configure(bg=hex_color)
 
-        # register d'un compte
+        # Sert à faire la procedure lorsqu'on appuie sur le bouton register
         def button_event_register():
             global pseudo_for_verification
             # récupere les informations
@@ -65,7 +68,6 @@ def create_window_login():
             password = password_entry_register.get()
 
             hashed_password = hash_password(password)
-            print(hashed_password)
 
             # S'il n'y a pas de pseudo afficher une alerte sinon continuer le processus
             if len(pseudo) > 0:
@@ -184,12 +186,14 @@ def create_window_login():
     hex_color = '#%02x%02x%02x' % rgb_color  # translation in hexa
     window.configure(bg=hex_color)
 
-    # login d'un compte
+    # Sert à faire la procedure lorsqu'on appuie sur le bouton login
     def button_event_login():
         global username_info, password_info
         # récupere les informations
         username_login = username_entry.get()
         password_login = password_entry.get()
+
+        bytes_password_login = bytes(password_login, 'utf-8')
 
         username_for_verify = verify_user(username_login)
 
@@ -197,26 +201,20 @@ def create_window_login():
         if username_for_verify == None:
             messagebox.showinfo("PSEUDO", "Votre pseudo n'existe pas!\nVérifier l'écriture de votre pseudo, si dans le cas contraire vous n'avez pas de compte veuillez en créer un en cliquant sur le bouton 'Register'.")
         else:
-            print(verify_password(username_login))
-            password_for_verify = verify_password(username_login)
-            # CONTINUER A LA RENTREE
-            password_hashed = bytes(password_login, 'utf-8')
-            hashed = bcrypt.hashpw(password_hashed, bcrypt.gensalt())
-            if bcrypt.checkpw(password_hashed, hashed):
-                print("It Matches!")
-            else:
-                print("It Does not Match :(")
+            password_for_verify = get_password_by_nickname(username_login)
+            bytes_password_for_verify = bytes(password_for_verify, 'utf-8')
 
             # Si le mdp est pareil que celui qui est dans la db faire la connection sinon afficher un message d'erreur
-            if password_for_verify == password_login:
+            if bcrypt.checkpw(bytes_password_login, bytes_password_for_verify):
                 print("=")
                 username_info = username_login
-                password_info = password_login
+                password_info = password_for_verify
                 # détruit la fenetre de login
                 window.destroy()
                 results()
             else:
                 messagebox.showinfo("PASSWORD", "Votre mot de passe est incorrect !")
+
 
     ##########################################
 
@@ -268,6 +266,8 @@ def create_window_login():
     submit_button = tk.Button(submit_frame, text="Submit", command=button_event_login)
     submit_button.pack(side=LEFT)
 
+
+    # Lance la fenetre de création de compte et désactive les boutons & entrys
     def register():
         # désactivation
         username_entry.config(state='disabled')
@@ -302,10 +302,7 @@ def create_window_login():
 # call other windows (exercices)
 def results():
     global exercice, pseudo, filter_variable, username_info, password_info
-    print(username_info)
-    print(password_info)
     permision_level = get_permission_level_from_nickname_and_password(username_info, password_info)
-    print(permision_level)
     # Sert à reload l'affichage
     def display_tuple_in_table(mytuple):
         global exercice, pseudo, filter_variable, info_label, top_label_result_list
@@ -363,15 +360,12 @@ def results():
         else:
             date_convert = datetime.datetime.strptime(date_end, "%Y-%m-%d")
             date_convert = date_convert + datetime.timedelta(days=1)
-            print(date_convert)
 
             date = str(date_convert)
             date_split = date.split()
 
             date_end = date_split[0]
-            print(date_end)
         sql_base = sql_base + sql_dynamic(pseudo, exercise, date_start, date_end)
-        print(sql_base)
         return sql_base
 
     # Génère la fin de la requête dynamiquement
@@ -405,7 +399,6 @@ def results():
     def button_delete_action():
         if permision_level == 2:
             if delete_entry.get() == "":
-                print("Vide")
                 messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
             else:
                 delete_id = delete_entry.get()
@@ -620,7 +613,6 @@ def results():
             if check_entry == True:
                 # Si c'est vide afficher une erreur
                 if modify_entry.get() == "":
-                    print("vide")
                     messagebox.showinfo("Erreur", "Veuillez entrer un chiffre !")
                 else:
                     # Essaye d'afficher la fenetre
@@ -827,6 +819,7 @@ def results():
             messagebox.showinfo("PERMISSION", "Vous ne possedez pas les permissions requises pour cette action")
 
 
+    # Sert à ajouter des permissions à un utilisateurs si on est niveau 2
     def add_permission():
         if permision_level == 2:
             # active les boutons et entrys

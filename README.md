@@ -17,3 +17,8 @@ Il conviendra cependant d'installer le package mysql-connector-python pour l'int
 
 Propriétaire du dépôt : frederique.andolfatto@eudvaud.ch\
 Enseignant ayant créé le projet de base : jeanphilippe.chavey@eduvaud.ch
+
+
+### Nouveautés ###
+Changement du fichier DB_CREATE.sql (Insertion de données, nouvelle table)
+Changement des fichiers MLD et MCD

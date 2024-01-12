@@ -61,5 +61,5 @@ INSERT INTO results (id, nickname, exercises, dates, duration, nb_of_right_answe
 
 
 INSERT INTO users (id, nickname, password, permission_level) 
-	VALUES (1, "chavey", "123", 1),
-			 (2, "carlos", "123",0);
+	VALUES (1, "chavey", "$2b$12$oUwASJiwkAvwCaGDyagsM.a/vJcMiNQhSZf1pY6tuCvg94fGLjnxK", 2),
+			 (2, "carlos", "$2b$12$e0ciqslVEVzwhT15ca4o5.Uk7AmEnLi7YnkC/Tcuy.CD7yveksSRm",1);
